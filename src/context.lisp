@@ -35,7 +35,7 @@
 	     :reader bindings-of)
    (context :initarg :context
 	    :reader context-of)
-   (view :initform (view)
+   (view :initform (name-of (view))
 	 :reader view-of)
    (path :initform (path)
 	 :reader path-of)))
@@ -55,8 +55,8 @@
 		   :reader parameter-name-of)))
 
 (defun pop-parameter-value (name &optional (context *context*))
-  (let ((hashtable (parameters-of context)))
-    (symbol-macrolet ((parameters (gethash name hashtable)))
+  (let ((table (parameters-of context)))
+    (symbol-macrolet ((parameters (gethash name table)))
       (when (null parameters)
 	(signal 'value-is-expected
 		:parameter-name name

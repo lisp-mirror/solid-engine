@@ -8,7 +8,7 @@
 			 (quote ,variable)))
 
 (defun parameter-value (name &optional (function #'identity))
-  (command-arg name function))
+  (view-param name function))
 
 (defun variants (&optional (variants *variants-fn*))
   (funcall variants))
@@ -32,14 +32,18 @@
 		 bindings)
      ,@body))
 
-(defun get-variable-value (variable-name &optional (view *view*))
+(defun get-variable-value (variable-name &optional (view (view)))
   (let* ((name (name-of view))
 	 (variable-function (get name variable-name))
 	 (bindings (bindings-of view)))
     (when (null variable-function)
       (error "Variable ~a for view ~a is not defined" variable-name name))
     (symbol-macrolet ((value (gethash variable-name bindings)))
-      (or value (setf value (funcall variable-function))))))
+      (multiple-value-bind (value presentp)
+	  value
+	(if (not presentp)
+	    (setf value (funcall variable-function))
+	    value)))))
 
 (defun get-variable-value-with-variants (variable-name function)
   (let ((*variants-fn* function))
