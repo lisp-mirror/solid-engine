@@ -16,4 +16,4 @@
   (signal 'select-command))
 
 (defun path (&optional (commands *command-stack*))
-  commands)
+  (reverse commands))

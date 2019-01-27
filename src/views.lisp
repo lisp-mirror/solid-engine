@@ -15,7 +15,8 @@
 (defmacro with-view ((name &rest args &key &allow-other-keys) &body body)
   `(call-with-view #'(lambda () ,@body) (quote ,name) (list ,@args)))
 
-(defun call-with-view (function name arguments &optional (stack *view-stack*))
+(defun call-with-view (function name arguments &optional
+						 (stack *view-stack*))
   (let ((*view-stack*
 	 (list*
 	  (make-instance 'view :arguments arguments :name name)	stack)))
@@ -24,7 +25,7 @@
 (defun parameters (&optional (stack *view-stack*))
   (reduce #'append (rest stack)
 	  :key #'(lambda (view)
-		   (hash-table-plist
+		   (hash-table-alist
 		    (parameters-of view)))
 	  :from-end t))
 
