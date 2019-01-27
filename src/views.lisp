@@ -23,11 +23,11 @@
     (funcall function)))
 
 (defun parameters (&optional (stack *view-stack*))
-  (reduce #'append (rest stack)
+  (reduce #'append (reverse
+		    (rest stack))
 	  :key #'(lambda (view)
 		   (hash-table-alist
-		    (parameters-of view)))
-	  :from-end t))
+		    (parameters-of view)))))
 
 (defun view (&optional (stack *view-stack*))
   (first stack))
