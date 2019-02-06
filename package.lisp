@@ -16,5 +16,6 @@
 	   #:path-of
 	   #:variants
 	   #:view-of
+	   #:with-command
 	   #:with-variables
 	   #:with-view))

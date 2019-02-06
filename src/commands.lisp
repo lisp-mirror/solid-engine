@@ -5,11 +5,15 @@
 (define-condition select-command (partial-context)
   ())
 
-(defmacro dispatch-command (&body commands)
-  `(call-dispatch-command #'(lambda (command)
-			      (ecase command ,@commands))))
+(defmacro with-command ((binding) &body body)
+  `(call-with-command #'(lambda (,binding)
+			  ,@body)))
 
-(defun call-dispatch-command (function)
+(defmacro dispatch-command (&body commands)
+  `(call-with-command #'(lambda (command)
+			  (ecase command ,@commands))))
+
+(defun call-with-command (function)
   (let* ((command-name (pop-path-segment))
 	 (*command-stack* (list* command-name *command-stack*)))
     (funcall function command-name))
