@@ -19,7 +19,7 @@ For http-protocol choice stack can be stored in URL (as query parameters and par
 First of all, you must integrate it with your (web-)server and presentation-layer.
 For Hunchentoot and cl-closure-templates integration code listed above:
 
-```common lisp
+```common-lisp
 (defpackage #:web-app
   (:use #:alexandria
   	#:cl
