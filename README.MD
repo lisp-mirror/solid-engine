@@ -98,7 +98,8 @@ For Hunchentoot and cl-closure-templates integration code listed above:
 Solid-engine provide some macros and functions:
 
 
-*Function* CALL-WITH-CONTEXT
+
+*Function* __CALL-WITH-CONTEXT__
 
 __Syntax:__
 
@@ -117,6 +118,8 @@ __Arguments and Values__
 __Description:__
 
 Called to begin exection.
+
+
 
 *Macro* __WITH-VIEW__
 
@@ -137,6 +140,8 @@ __Arguments and Values:__
 __Description:__
 
 with-view dynamicaly bind view name and arguments. When value stack is exhusedthe view name and arguments are returned from nearest top with-view form.
+
+
 
 *Macro* __WITH-COMMAND__
 
@@ -180,13 +185,15 @@ __Description:__
 
 'ecase' form for dispatching command. Same as:
 
-```common lisp
+```common-lisp
 
 (with-command (command)
 
 (ecase command (name-1 ...) ...))
 
 ```
+
+
 
 *Macro* __WITH-VARIABLES__
 
