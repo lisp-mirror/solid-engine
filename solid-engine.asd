@@ -1,9 +1,9 @@
 ;;;; solid-engine.asd
 
 (asdf:defsystem #:solid-engine
-  :description "User interface application controller"
+  :description "The Common Lisp stack-based application controller"
   :author "Makarov Alexey <alexeys9@yandex.ru>"
-  :license "LLGPL"
+  :license "MIT"
   :depends-on (#:alexandria)
   :components ((:file "package")
                (:module "src"
