@@ -331,7 +331,6 @@ __Description:__
 
 Return current commands stack.
 
-
-
 ## Example:
 
+Work of solid-engine demonstrated in [Nodes](https://bitbucket.org/reginleif/nodes/src/master/)
