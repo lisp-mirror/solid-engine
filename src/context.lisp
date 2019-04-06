@@ -2,6 +2,9 @@
 
 (defvar *context*)
 
+(defun context* ()
+  *context*)
+
 (defclass context ()
   ((parameters :reader parameters-of)
    (path :initarg :path
@@ -20,45 +23,58 @@
 	  parameter
 	(push value (gethash name hash-table nil))))))
 
-(defun call-with-context (function path parameters)
+(defun call-with-solid-engine (function path parameters &rest clauses &key &allow-other-keys)
   (let ((*context*
 	 (make-instance 'context :parameters parameters :path path)))
     (handler-case (funcall function)
-      (partial-context (condition) condition))))
+      (reply (condition)
+	(let ((view (view-of condition)))
+	  (apply (getf clauses (name-of condition))
+		 :commands (commands-of condition)
+		 :parameters (parameters-of condition)
+		 :arguments (arguments-of view)
+		 :view (name-of view)
+		 (args-of condition)))))))
 
-(define-condition partial-context ()
-  ((parameters :initform (parameters)
+(define-condition reply ()
+  ((name :initarg :name
+	 :reader name-of)
+   (commands :initarg :commands
+	     :reader commands-of)
+   (parameters :initarg :parameters
 	       :reader parameters-of)
-   (arguments :initform (arguments)
-	      :reader arguments-of)
-   (bindings :initform (bindings)
-	     :reader bindings-of)
-   (context :initarg :context
-	    :reader context-of)
-   (view :initform (name-of (view))
+   (view :initarg :view
 	 :reader view-of)
-   (path :initform (path)
-	 :reader path-of)))
+   (args :initarg :args
+	 :reader args-of)))
 
-(define-condition command-is-expected (partial-context)
-  ())
+(defmacro with-solid-engine ((commands parameters) (&rest clauses) &body body)
+  `(call-with-solid-engine #'(lambda () ,@body) ,commands ,parameters
+			   ,@(loop for (name args . body) in clauses
+				appending `(,name (function (lambda ,args ,@body))))))
+
+(defun reply (name &rest args &key &allow-other-keys)
+  (let ((view (view))
+	(commands (commands))
+	(parameters (parameters)))
+    (signal 'reply
+	    :name name
+	    :commands commands
+	    :parameters parameters
+	    :arguments (arguments-of view)
+	    :view view
+	    :args args)))
 
 (defun pop-path-segment (&optional (context *context*))
   (with-slots (path)
       context
     (when (null path)
-      (signal 'command-is-expected :context context))
+      (reply :command-is-expected))
     (pop path)))
-
-(define-condition value-is-expected (partial-context)
-  ((parameter-name :initarg :parameter-name
-		   :reader parameter-name-of)))
 
 (defun pop-parameter-value (name &optional (context *context*))
   (let ((table (parameters-of context)))
     (symbol-macrolet ((parameters (gethash name table)))
       (when (null parameters)
-	(signal 'value-is-expected
-		:parameter-name name
-		:context context))
+	(reply :value-is-expected))
       (pop parameters))))

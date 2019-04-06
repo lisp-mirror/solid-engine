@@ -2,9 +2,6 @@
 
 (defvar *command-stack* nil)
 
-(define-condition select-command (partial-context)
-  ())
-
 (defmacro with-command ((binding) &body body)
   `(call-with-command #'(lambda (,binding)
 			  ,@body)))
@@ -17,7 +14,7 @@
   (let* ((command-name (pop-path-segment))
 	 (*command-stack* (list* command-name *command-stack*)))
     (funcall function command-name))
-  (signal 'select-command))
+  (reply :end-of-stack))
 
-(defun path (&optional (commands *command-stack*))
+(defun commands (&optional (commands *command-stack*))
   (reverse commands))

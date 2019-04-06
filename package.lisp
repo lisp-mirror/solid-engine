@@ -2,20 +2,13 @@
 
 (defpackage #:solid-engine
   (:use #:cl #:alexandria)
-  (:export #:answer
-	   #:arguments-of
-	   #:bindings-of
-	   #:call-with-context
-	   #:command-of
-	   #:context-of
+  (:export #:call-with-solid-engine
 	   #:define-variable
 	   #:dispatch-command
-	   #:parameter-name-of
 	   #:parameter-value
-	   #:parameters-of
-	   #:path-of
+	   #:reply
 	   #:variants
-	   #:view-of
 	   #:with-command
+	   #:with-solid-engine
 	   #:with-variables
 	   #:with-view))

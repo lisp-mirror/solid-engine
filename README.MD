@@ -1,5 +1,11 @@
 # Solid-engine - The Common Lisp stack-based application controller
 
+## Changes
+
+1.0 - Release.
+
+1.1 - The function `CALL-WITH-CONTEXT' replaced by `CALL-WITH-SOLID-ENGINE'. Introduced macro `WITH-SOLID-ENGINE' and function `REPLY' for dispatching user replies.
+
 ## Problems and solution concept 
 HTTP-protocol is stateless. If we want to do complex actions, for example: wizard dialog on the series of pages or, more importantly, manage presentation from server, we must save intermediate state. For storing state can be used some techics: storing session in database or server memory, storing some data on page by using async requests or by using cookies. All of that techics have their drowback, storing data on client fraught with security breach, storing session in server memory imposes restrictions on the amount of memory and in addition there is a need to keep track of the lifetime of a session. Moreover, the user will not be able to visit the page after the expiration of the session. There is a need to restore the state by information available in the URL.
 In addition to this problems, an effective mechanism is needed to control the presentation from the server (application controller).
@@ -47,35 +53,41 @@ For Hunchentoot and cl-closure-templates integration code listed above:
       (t
        (let ((path (make-path script-name))
 	     (parameters (list-parameters request)))
-	 (reply
-	  (call-with-context #'main path parameters)))))))
+	 (with-solid-engine (commands parameters)
+	     ((:command-is-expected (&rest args &key &allow-other-keys)
+	        (apply #'handle-view args))
+	      (:value-is-expected (&rest args &key &allow-other-keys)
+		(apply #'handle-view args))
+	      (:end-of-stack (&rest args &key &allow-other-keys)
+		(apply #'handle-view args)))
+	   (main)))))))
 
-(defun reply (answer)
-  (let* ((parameters
-	  (parameters-of answer))
-	 (script-name
-	  (format nil "/~{~(~a~)~^/~}" (path-of answer)))
-	 (query-string
-	  (format nil "~{~(~a~)=~a~^&~}" (alist-plist parameters)))
-	 (*injected-data*
-	  (list :parameters
-		(mapcar #'(lambda (parameter)
-			    (list :name (first parameter)
-				  :value (rest parameter)))
-			parameters)
-		:query-string query-string
-		:script-name script-name)))
+(defun handle-view (&key view arguments commands parameters &allow-other-keys)
+  (let ((script-name
+	 (format nil "/~{~(~a~)~^/~}" commands))
     (case (request-method*)
       (:get
-       (funcall
-	(symbol-function
-	 (find-symbol
-	  (string (view-of answer))
-	  (find-package "WEB-APP")))
-	(arguments-of answer)))
+       (render-view view arguments script-name parameters))
       (:post
-       (redirect (format nil "~a~@[?~a~]" script-name query-string)
+       (redirect (format nil "~a~@[?~{~(~a~)=~a~^&~}~]"
+			 script-name (alist-plist parameters))
 		 :code +http-see-other+)))))
+
+(defun render-view (view arguments script-name parameters)
+  (let ((template (symbol-function
+		   (find-symbol
+		    (string view)
+		    (find-package "WEB-APP")))))
+	(*injected-data*
+	 (list :script-name script-name
+	       :query-string (format nil "~@[?~{~(~a~)=~a~^&~}~]"
+			     	     (alist-plist parameters))
+	       :parameters (mapcar #'(lambda (parameter)
+				       (destructuring-bind (name . value)
+					   parameter
+					 (list :name name :value value)))
+				   parameters))))
+    (funcall template arguments))
 
 (defun make-path (script-name)
   (let ((package (find-package "WEB-APP")))
@@ -98,11 +110,17 @@ Solid-engine provide some macros and functions:
 
 
 
-*Function* __CALL-WITH-CONTEXT__
+*Function* __CALL-WITH-SOLID-ENGINE__
 
 __Syntax:__
 
-__call-with-context__ *function commands-stack parameters-stack => result*
+__call-with-solid-engine__ *function commands-stack parameters-stack &rest handlers &key &allow-other-keys => result*
+
+__handlers__ ::= handler*
+
+__handler__ ::= reply-type function
+
+__reply-type__ ::= keyword
 
 __Arguments and Values__
 
@@ -112,11 +130,33 @@ __Arguments and Values__
 
 *parameters-stack* --- alist of other parameters (as Hunchentoot provides by _get-parameters*_ or _post-parameters*_. Becouse of using variable-names repetedly in execution process (e. g. recusive calls), stack can contain variable values several times. Parameters is used to provide variable values (see *WITH-VARIABLES*, *DEFINE-VARIABLE* and *PARAMETER-VALUE*).
 
-*result* --- object that represents result of execution. Is contains view-name (by name-of), view-arguments (by arguments-of) and stack (by parameters-of).
+*handlers* --- functions with arg-list (&key *allow-other-keys) and dispatch replies. Solid-engine defined three types of replies: :command-is-expected, :value-is-expected and :end-of-stack. All three types is normal behavior: :command-is-expected --- command stack has ended in middle of execution branch, :value-is-expected --- parameter stack has ended in middle of execution branch, :end-of-stack --- end of execution branch has reached. Common arguments for handler: view and arguments provided by nearest `with-view' form, commands and parameters used in execution, `value-is-expected' have additional arguments: `:variable-name' and `parameter-name', variable name and parameter name that value is expected.
 
 __Description:__
 
 Called to begin exection.
+
+
+
+*Macro* __WITH-SOLID-ENGINE__
+
+__Syntax:__
+
+__with-solid-engine__ __((commands parameters) (&rest (reply-type (&key &allow-other-keys) &body handler-body)) &body body) => result*__
+
+__Arguments and Values:__
+
+*name* --- view name.
+
+*arguments* --- view arguments.
+
+*forms* --- an implict progn.
+
+*results* --- the values returned by the forms.
+
+__Description:__
+
+Macro for calling `call-with-solid-engine'.
 
 
 
@@ -138,7 +178,7 @@ __Arguments and Values:__
 
 __Description:__
 
-with-view dynamicaly bind view name and arguments. When value stack is exhusedthe view name and arguments are returned from nearest top with-view form.
+with-view dynamicaly bind view name and arguments. When value stack is exhused, the view name and arguments are returned from nearest top with-view form.
 
 
 
@@ -268,67 +308,21 @@ Return list of values defined by values-form in WITH-VARIABLE in context of a vi
 
 
 
-*Function* __VIEW-OF__
+*Function* __REPLY__
 
 __Syntax:__
 
-__view-of__ _answer => result_
+_reply reply-name &rest arguments &key &allow-other-keys __=> nil
 
-_answer_ --- object returned from CALL-WITH-CONTEXT.
+__Arguments and Values:__
 
-_result_ --- a symbol.
+_reply_name_ --- keyword
 
-__Description:__
-
-Return current view name.
-
-
-
-*Function* __ARGUMENTS-OF__
-
-__Syntax:__
-
-__arguments-of__ _answer => result_
-
-_answer_ --- object returned from CALL-WITH-CONTEXT.
-
-_result_ --- plist.
+_arguments_ --- arguments that passed to handler function.
 
 __Description:__
 
-Return arguments of current view.
-
-
-
-*Function* __PARAMETERS-OF__
-
-__Syntax:__
-
-__parameters-of__ _answer => result_
-
-_answer_ --- object returned from CALL-WITH-CONTEXT.
-
-_result_ --- alist.
-
-__Description:__
-
-Return current variables stack.
-
-
-
-*Function* __PATH-OF__
-
-__Syntax:__
-
-__path-of__ _answer => result_
-
-_answer_ --- object returned from CALL-WITH-CONTEXT.
-
-_result_ --- a list.
-
-__Description:__
-
-Return current commands stack.
+Break execution and run reply hundler.
 
 ## Example:
 
