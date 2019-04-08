@@ -130,7 +130,7 @@ __Arguments and Values__
 
 *parameters-stack* --- alist of other parameters (as Hunchentoot provides by _get-parameters*_ or _post-parameters*_. Becouse of using variable-names repetedly in execution process (e. g. recusive calls), stack can contain variable values several times. Parameters is used to provide variable values (see *WITH-VARIABLES*, *DEFINE-VARIABLE* and *PARAMETER-VALUE*).
 
-*handlers* --- functions with arg-list (&key *allow-other-keys) and dispatch replies. Solid-engine defined three types of replies: :command-is-expected, :value-is-expected and :end-of-stack. All three types is normal behavior: :command-is-expected --- command stack has ended in middle of execution branch, :value-is-expected --- parameter stack has ended in middle of execution branch, :end-of-stack --- end of execution branch has reached. Common arguments for handler: view and arguments provided by nearest `with-view' form, commands and parameters used in execution, `value-is-expected` have additional arguments: `:variable-name` and `parameter-name`, variable name and parameter name that value is expected.
+*handlers* --- functions with arg-list (&key *allow-other-keys) and dispatch replies. Solid-engine defined three types of replies: :command-is-expected, :value-is-expected and :end-of-stack. All three types is normal behavior: :command-is-expected --- command stack has ended in middle of execution branch, :value-is-expected --- parameter stack has ended in middle of execution branch, :end-of-stack --- end of execution branch has reached. Common arguments for handler: view and arguments provided by nearest `with-view` form, commands and parameters used in execution, `value-is-expected` have additional arguments: `:variable-name` and `parameter-name`, variable name and parameter name that value is expected.
 
 __Description:__
 
@@ -142,7 +142,7 @@ Called to begin exection.
 
 __Syntax:__
 
-__with-solid-engine__ __((commands parameters) (&rest (reply-type (&key &allow-other-keys) &body handler-body)) &body body) => result*__
+__with-solid-engine__ _((commands parameters) (&rest (reply-type (&key &allow-other-keys) &body handler-body)) &body body) => result*_
 
 __Arguments and Values:__
 
@@ -156,7 +156,7 @@ __Arguments and Values:__
 
 __Description:__
 
-Macro for calling `call-with-solid-engine'.
+Macro for calling `call-with-solid-engine`.
 
 
 
@@ -164,7 +164,7 @@ Macro for calling `call-with-solid-engine'.
 
 __Syntax:__
 
-__with-view__ __(name &rest arguments &key &allow-other-keys) form* => result*__
+__with-view__ _(name &rest arguments &key &allow-other-keys) form* => result*_
 
 __Arguments and Values:__
 
@@ -196,7 +196,7 @@ __Arguments and Values:__
 
 *results* --- the values returned by the forms.
 
-*Description:*
+__Description:__
 
 with-command creates new variable binding by using head of command-stack.
 
@@ -296,7 +296,7 @@ Pop's value from stack.
 
 __Syntax:__
 
-_variants_ __=> result__
+__variants__ _=> result_
 
 __Arguments and Values:__
 
@@ -312,7 +312,7 @@ Return list of values defined by values-form in WITH-VARIABLE in context of a vi
 
 __Syntax:__
 
-_reply reply-name &rest arguments &key &allow-other-keys __=> nil
+__reply__ _reply-name &rest arguments &key &allow-other-keys => nil_
 
 __Arguments and Values:__
 
@@ -326,4 +326,4 @@ Break execution and run reply hundler.
 
 ## Example:
 
-Work of solid-engine demonstrated in [Nodes](https://bitbucket.org/reginleif/nodes/src/master/)
+Work of solid-engine demonstrated in [Nodes](https://bitbucket.org/reginleif/nodes/)
