@@ -4,7 +4,7 @@
 
 1.0 - Release.
 
-1.1 - The function `CALL-WITH-CONTEXT' replaced by `CALL-WITH-SOLID-ENGINE'. Introduced macro `WITH-SOLID-ENGINE` and function `REPLY` for dispatching user replies.
+1.1 - The function `CALL-WITH-CONTEXT` replaced by `CALL-WITH-SOLID-ENGINE`. Introduced macro `WITH-SOLID-ENGINE` and function `REPLY` for dispatching user replies.
 
 ## Problems and solution concept 
 HTTP-protocol is stateless. If we want to do complex actions, for example: wizard dialog on the series of pages or, more importantly, manage presentation from server, we must save intermediate state. For storing state can be used some techics: storing session in database or server memory, storing some data on page by using async requests or by using cookies. All of that techics have their drowback, storing data on client fraught with security breach, storing session in server memory imposes restrictions on the amount of memory and in addition there is a need to keep track of the lifetime of a session. Moreover, the user will not be able to visit the page after the expiration of the session. There is a need to restore the state by information available in the URL.
