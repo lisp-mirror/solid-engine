@@ -2,7 +2,7 @@
 
 (defpackage #:solid-engine
   (:use #:cl #:alexandria)
-  (:export #:call-with-solid-engine
+  (:export #:bind-variable
 	   #:define-variable
 	   #:dispatch-command
 	   #:parameter-value

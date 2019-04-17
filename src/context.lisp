@@ -53,16 +53,17 @@
 			   ,@(loop for (name args . body) in clauses
 				appending `(,name (function (lambda ,args ,@body))))))
 
+(defun list-parameters (command)
+  (hash-table-alist
+   (parameters-of command)))
+
 (defun reply (name &rest args &key &allow-other-keys)
-  (let ((view (view))
-	(commands (commands))
-	(parameters (parameters)))
+  (let ((commands (commands)))
     (signal 'reply
 	    :name name
-	    :commands commands
-	    :parameters parameters
-	    :arguments (arguments-of view)
-	    :view view
+	    :commands (mapcar #'name-of commands)
+	    :parameters (reduce #'append commands :key #'list-parameters)
+	    :view (view)
 	    :args args)))
 
 (defun pop-path-segment (&optional (context *context*))
