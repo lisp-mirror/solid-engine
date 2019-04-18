@@ -2,9 +2,9 @@
 
 (defvar *variants*)
 
-(defmacro define-variable ((command variable) &body body)
+(defmacro define-variable ((view variable) &body body)
   `(call-define-variable #'(lambda () ,@body)
-			 (quote ,command)
+			 (quote ,view)
 			 (quote ,variable)))
 
 (defun variants (&optional (variants *variants*))
